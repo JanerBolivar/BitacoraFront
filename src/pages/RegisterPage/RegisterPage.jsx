@@ -44,7 +44,7 @@ const RegisterPage = () => {
         formData.append("photo", photo); // Agregar la imagen al FormData
 
         try {
-            const response = await axios.post("http://localhost:3000/api/user/register", formData, {
+            const response = await axios.post("/api/user/register", formData, {
                 headers: {
                     "Content-Type": "multipart/form-data", // Especificar el tipo de contenido
                 },
@@ -77,7 +77,7 @@ const RegisterPage = () => {
             const idToken = await userGoogle.getIdToken(true);
 
             // Enviar el token de ID al backend
-            const response = await axios.post('http://localhost:3000/api/user/google-login', { idToken });
+            const response = await axios.post('/api/user/google-login', { idToken });
 
             const { user, token, expirationDate } = response.data;
 
@@ -96,7 +96,7 @@ const RegisterPage = () => {
             const result = await signInWithPopup(auth, githubProvider);
             const accessToken = result.user.accessToken;
 
-            const response = await axios.post('http://localhost:3000/api/user/github-login', {
+            const response = await axios.post('/api/user/github-login', {
                 accessToken,
             });
 
@@ -117,7 +117,7 @@ const RegisterPage = () => {
             const result = await signInWithPopup(auth, twitterProvider);
             const accessToken = result.user.accessToken;
 
-            const response = await axios.post('http://localhost:3000/api/user/twitter-login', {
+            const response = await axios.post('/api/user/twitter-login', {
                 accessToken,
             });
 

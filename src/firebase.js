@@ -1,15 +1,16 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
+import { apiKey, authDomain, projectId, storageBucket, messagingSenderId, appId, measurementId } from './config'
 
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAIw0Qc75fTr7C0xYwMqlgafbxABEYImb0",
-  authDomain: "bitacora-peces.firebaseapp.com",
-  projectId: "bitacora-peces",
-  storageBucket: "bitacora-peces.appspot.com",
-  messagingSenderId: "479926767904",
-  appId: "1:479926767904:web:9b1b062bec0d1280e6c745",
-  measurementId: "G-B5BQHY5NPN"
+  apiKey: apiKey,
+  authDomain: authDomain,
+  projectId: projectId,
+  storageBucket: storageBucket,
+  messagingSenderId: messagingSenderId,
+  appId: appId,
+  measurementId: measurementId
 };
 
 // Initialize Firebase

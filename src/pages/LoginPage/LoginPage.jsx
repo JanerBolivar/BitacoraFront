@@ -33,7 +33,7 @@ const LoginPage = () => {
         setError('');
 
         try {
-            const response = await axios.post('http://localhost:3000/api/user/login', {
+            const response = await axios.post('/api/user/login', {
                 email,
                 password
             });
@@ -59,7 +59,7 @@ const LoginPage = () => {
             const idToken = await userGoogle.getIdToken(true);
 
             // Enviar el token de ID al backend
-            const response = await axios.post('http://localhost:3000/api/user/google-login', { idToken });
+            const response = await axios.post('/api/user/google-login', { idToken });
 
             const { user, token, expirationDate } = response.data;
 
@@ -78,7 +78,7 @@ const LoginPage = () => {
             const result = await signInWithPopup(auth, githubProvider);
             const accessToken = result.user.accessToken;
 
-            const response = await axios.post('http://localhost:3000/api/user/github-login', {
+            const response = await axios.post('/api/user/github-login', {
                 accessToken,
             });
 
@@ -99,7 +99,7 @@ const LoginPage = () => {
             const result = await signInWithPopup(auth, twitterProvider);
             const accessToken = result.user.accessToken;
 
-            const response = await axios.post('http://localhost:3000/api/user/twitter-login', {
+            const response = await axios.post('/api/user/twitter-login', {
                 accessToken,
             });
 
@@ -117,7 +117,7 @@ const LoginPage = () => {
         setSuccessMessage('');
 
         try {
-            const response = await axios.post('http://localhost:3000/api/user/reset-password', {
+            const response = await axios.post('/api/user/reset-password', {
                 email
             });
             setSuccessMessage(response.data.message);
