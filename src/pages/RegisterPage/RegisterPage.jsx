@@ -3,7 +3,6 @@ import { Head } from "../../components/Components/Head";
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from "../../contexts/useAuth";
-
 import {
     signInWithPopup,
     GoogleAuthProvider,
@@ -11,7 +10,6 @@ import {
     TwitterAuthProvider,
 } from "firebase/auth";
 import { auth } from "../../firebase";
-
 
 const RegisterPage = () => {
     const { login, isAuthenticated } = useAuth();
@@ -25,7 +23,6 @@ const RegisterPage = () => {
     const [error, setError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
 
-    // Efecto secundario para redirigir cuando el usuario se autentica
     useEffect(() => {
         if (isAuthenticated) {
             navigate('/dashboard');
@@ -41,20 +38,17 @@ const RegisterPage = () => {
         formData.append("email", email);
         formData.append("password", password);
         formData.append("role", "colaborador");
-        formData.append("photo", photo); // Agregar la imagen al FormData
+        formData.append("photo", photo);
 
         try {
             const response = await axios.post("/api/user/register", formData, {
                 headers: {
-                    "Content-Type": "multipart/form-data", // Especificar el tipo de contenido
+                    "Content-Type": "multipart/form-data",
                 },
             });
 
             const { user, token, expirationDate } = response.data;
-
-            login(user, token, expirationDate); // Inicia sesión
-
-            // Manejar la respuesta de éxito
+            login(user, token, expirationDate);
             console.log(response.data.message);
         } catch (error) {
             if (error.response) {
@@ -68,21 +62,13 @@ const RegisterPage = () => {
     const handleGoogleLogin = async () => {
         setError("");
         const googleProvider = new GoogleAuthProvider();
-
         try {
             const result = await signInWithPopup(auth, googleProvider);
             const userGoogle = result.user;
-
-            // Obtén un token de ID fresco
             const idToken = await userGoogle.getIdToken(true);
-
-            // Enviar el token de ID al backend
             const response = await axios.post('/api/user/google-login', { idToken });
-
             const { user, token, expirationDate } = response.data;
-
-            login(user, token, expirationDate); // Inicia sesión
-
+            login(user, token, expirationDate);
         } catch (err) {
             setError(err.message);
         }
@@ -91,19 +77,12 @@ const RegisterPage = () => {
     const handleGithubLogin = async () => {
         setError("");
         const githubProvider = new GithubAuthProvider();
-
         try {
             const result = await signInWithPopup(auth, githubProvider);
             const accessToken = result.user.accessToken;
-
-            const response = await axios.post('/api/user/github-login', {
-                accessToken,
-            });
-
+            const response = await axios.post('/api/user/github-login', { accessToken });
             const { user, token, expirationDate } = response.data;
-
-            login(user, token, expirationDate); // Inicia sesión
-
+            login(user, token, expirationDate);
         } catch (err) {
             setError(err.message);
         }
@@ -112,19 +91,12 @@ const RegisterPage = () => {
     const handleTwitterLogin = async () => {
         setError("");
         const twitterProvider = new TwitterAuthProvider();
-
         try {
             const result = await signInWithPopup(auth, twitterProvider);
             const accessToken = result.user.accessToken;
-
-            const response = await axios.post('/api/user/twitter-login', {
-                accessToken,
-            });
-
+            const response = await axios.post('/api/user/twitter-login', { accessToken });
             const { user, token, expirationDate } = response.data;
-
-            login(user, token, expirationDate); // Inicia sesión
-
+            login(user, token, expirationDate);
         } catch (err) {
             setError(err.message);
         }
@@ -137,23 +109,25 @@ const RegisterPage = () => {
                 newdescription="Crea una nueva cuenta en nuestra plataforma"
                 newkeywords="registro, cuenta nueva, sign up"
             />
-            <main className="w-full h-screen flex flex-col items-center justify-center bg-gray-100 sm:px-4">
-                <div className="w-full space-y-6 text-gray-600 sm:max-w-md">
+            <main className="w-full min-h-screen flex flex-col items-center justify-center bg-gray-100 px-4 py-8">
+                <div className="w-full max-w-md space-y-6 text-gray-600">
                     <div className="text-center">
-                        <Link to={"/"}>
-                            <img src="https://floatui.com/logo.svg" width={150} className="mx-auto" />
+                        <Link to={"/"} className="inline-block">
+                            <img src="/Logo_IMG.jpg" width={150} className="mx-auto" alt="Logo" />
                         </Link>
                         <div className="mt-5 space-y-2">
-                            <h3 className="text-gray-800 text-2xl font-bold sm:text-3xl">Crear una cuenta</h3>
-                            <p className="">¿Ya tienes una cuenta?
-                                <Link to={"/login"} className="font-medium text-indigo-600 hover:text-indigo-500"> Iniciar sesión</Link>
+                            <h3 className="text-gray-800 text-xl font-bold sm:text-2xl md:text-3xl">Crear una cuenta</h3>
+                            <p className="text-sm sm:text-base">¿Ya tienes una cuenta?
+                                <Link to={"/login"} className="font-medium text-indigo-600 hover:text-indigo-500 ml-1">Iniciar sesión</Link>
                             </p>
                         </div>
                     </div>
-                    <div className="bg-white shadow p-4 py-6 space-y-8 sm:p-6 sm:rounded-lg">
-                        {/* Botones de login superiores */}
-                        <div className="grid grid-cols-3 gap-x-3 mb-4">
-                            <button onClick={handleGoogleLogin} className="flex items-center justify-center py-2.5 border rounded-lg hover:bg-gray-50 duration-150 active:bg-gray-100">
+                    <div className="bg-white shadow p-4 py-6 space-y-8 sm:p-6 rounded-lg">
+                        <div className="grid grid-cols-3 gap-3">
+                            <button
+                                onClick={handleGoogleLogin}
+                                className="flex items-center justify-center p-2 sm:p-3 border rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                            >
                                 <svg className="w-5 h-5" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <g clip-path="url(#clip0_17_40)">
                                         <path d="M47.532 24.5528C47.532 22.9214 47.3997 21.2811 47.1175 19.6761H24.48V28.9181H37.4434C36.9055 31.8988 35.177 34.5356 32.6461 36.2111V42.2078H40.3801C44.9217 38.0278 47.532 31.8547 47.532 24.5528Z" fill="#4285F4" />
@@ -168,12 +142,18 @@ const RegisterPage = () => {
                                     </defs>
                                 </svg>
                             </button>
-                            <button onClick={handleTwitterLogin} className="flex items-center justify-center py-2.5 border rounded-lg hover:bg-gray-50 duration-150 active:bg-gray-100">
+                            <button
+                                onClick={handleTwitterLogin}
+                                className="flex items-center justify-center p-2 sm:p-3 border rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                            >
                                 <svg className="w-5 h-5" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M15.095 43.5014C33.2083 43.5014 43.1155 28.4946 43.1155 15.4809C43.1155 15.0546 43.1155 14.6303 43.0867 14.2079C45.0141 12.8138 46.6778 11.0877 48 9.11033C46.2028 9.90713 44.2961 10.4294 42.3437 10.6598C44.3996 9.42915 45.9383 7.49333 46.6733 5.21273C44.7402 6.35994 42.6253 7.16838 40.4198 7.60313C38.935 6.02428 36.9712 4.97881 34.8324 4.6285C32.6935 4.27818 30.4988 4.64256 28.5879 5.66523C26.677 6.68791 25.1564 8.31187 24.2615 10.2858C23.3665 12.2598 23.1471 14.4737 23.6371 16.5849C19.7218 16.3885 15.8915 15.371 12.3949 13.5983C8.89831 11.8257 5.81353 9.33765 3.3408 6.29561C2.08146 8.4636 1.69574 11.0301 2.2622 13.4725C2.82865 15.9148 4.30468 18.0495 6.38976 19.4418C4.82246 19.3959 3.2893 18.9731 1.92 18.2092V18.334C1.92062 20.6077 2.7077 22.8112 4.14774 24.5707C5.58778 26.3303 7.59212 27.5375 9.8208 27.9878C8.37096 28.3832 6.84975 28.441 5.37408 28.1567C6.00363 30.1134 7.22886 31.8244 8.87848 33.0506C10.5281 34.2768 12.5197 34.9569 14.5747 34.9958C12.5329 36.6007 10.1946 37.7873 7.69375 38.4878C5.19287 39.1882 2.57843 39.3886 0 39.0777C4.50367 41.9677 9.74385 43.5007 15.095 43.4937" fill="#1DA1F2" />
                                 </svg>
                             </button>
-                            <button onClick={handleGithubLogin} className="flex items-center justify-center py-2.5 border rounded-lg hover:bg-gray-50 duration-150 active:bg-gray-100">
+                            <button
+                                onClick={handleGithubLogin}
+                                className="flex items-center justify-center p-2 sm:p-3 border rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                            >
                                 <svg className="w-5 h-5" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <g clip-path="url(#clip0_910_21)">
                                         <path fill-rule="evenodd" clip-rule="evenodd" d="M24.0005 1C18.303 1.00296 12.7923 3.02092 8.45374 6.69305C4.11521 10.3652 1.23181 15.452 0.319089 21.044C-0.593628 26.636 0.523853 32.3684 3.47174 37.2164C6.41963 42.0643 11.0057 45.7115 16.4099 47.5059C17.6021 47.7272 18.0512 46.9883 18.0512 46.36C18.0512 45.7317 18.0273 43.91 18.0194 41.9184C11.3428 43.3608 9.93197 39.101 9.93197 39.101C8.84305 36.3349 7.26927 35.6078 7.26927 35.6078C5.09143 34.1299 7.43223 34.1576 7.43223 34.1576C9.84455 34.3275 11.1123 36.6194 11.1123 36.6194C13.2504 40.2667 16.7278 39.2116 18.0949 38.5952C18.3095 37.0501 18.9335 35.999 19.621 35.4023C14.2877 34.8017 8.68408 32.7548 8.68408 23.6108C8.65102 21.2394 9.53605 18.9461 11.156 17.2054C10.9096 16.6047 10.087 14.1785 11.3905 10.8829C11.3905 10.8829 13.4054 10.2427 17.9916 13.3289C21.9253 12.2592 26.0757 12.2592 30.0095 13.3289C34.5917 10.2427 36.6026 10.8829 36.6026 10.8829C37.9101 14.1706 37.0875 16.5968 36.8411 17.2054C38.4662 18.9464 39.353 21.2437 39.317 23.6187C39.317 32.7824 33.7015 34.8017 28.3602 35.3905C29.2186 36.1334 29.9856 37.5836 29.9856 39.8122C29.9856 43.0051 29.9578 45.5736 29.9578 46.36C29.9578 46.9962 30.391 47.7391 31.6071 47.5059C37.0119 45.7113 41.5984 42.0634 44.5462 37.2147C47.4941 32.3659 48.611 26.6326 47.6972 21.0401C46.7835 15.4476 43.8986 10.3607 39.5587 6.68921C35.2187 3.01771 29.7067 1.00108 24.0085 1H24.0005Z" fill="#191717" />
@@ -200,9 +180,9 @@ const RegisterPage = () => {
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-5">
-                            <div className="flex gap-4">
-                                <div className="w-1/2">
-                                    <label className="font-medium">Nombre</label>
+                            <div className="flex flex-col sm:flex-row gap-4">
+                                <div className="w-full sm:w-1/2">
+                                    <label className="font-medium text-sm">Nombre</label>
                                     <input
                                         type="text"
                                         required
@@ -211,8 +191,8 @@ const RegisterPage = () => {
                                         className="w-full mt-2 px-3 py-2 text-gray-500 bg-transparent outline-none border focus:border-indigo-600 shadow-sm rounded-lg"
                                     />
                                 </div>
-                                <div className="w-1/2">
-                                    <label className="font-medium">Apellido</label>
+                                <div className="w-full sm:w-1/2">
+                                    <label className="font-medium text-sm">Apellido</label>
                                     <input
                                         type="text"
                                         required
@@ -223,9 +203,9 @@ const RegisterPage = () => {
                                 </div>
                             </div>
 
-                            <div className="flex gap-4">
-                                <div className="w-1/2">
-                                    <label className="font-medium">Correo</label>
+                            <div className="flex flex-col sm:flex-row gap-4">
+                                <div className="w-full sm:w-1/2">
+                                    <label className="font-medium text-sm">Correo</label>
                                     <input
                                         type="email"
                                         required
@@ -234,8 +214,8 @@ const RegisterPage = () => {
                                         className="w-full mt-2 px-3 py-2 text-gray-500 bg-transparent outline-none border focus:border-indigo-600 shadow-sm rounded-lg"
                                     />
                                 </div>
-                                <div className="w-1/2">
-                                    <label className="font-medium">Contraseña</label>
+                                <div className="w-full sm:w-1/2">
+                                    <label className="font-medium text-sm">Contraseña</label>
                                     <input
                                         type="password"
                                         required
@@ -247,15 +227,15 @@ const RegisterPage = () => {
                             </div>
 
                             <div>
-                                <label className="font-medium">Foto de perfil</label>
-                                <div className="flex items-center justify-center w-full">
-                                    <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-40 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
-                                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                            <svg className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                                <label className="font-medium text-sm">Foto de perfil</label>
+                                <div className="mt-2">
+                                    <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-32 sm:h-40 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                                        <div className="flex flex-col items-center justify-center p-4 text-center">
+                                            <svg className="w-8 h-8 mb-2 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
                                                 <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2" />
                                             </svg>
-                                            <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">Click para subir</span> o arrastra y suelta</p>
-                                            <p className="text-xs text-gray-500">SVG, PNG, JPG o GIF (MAX. 800x400px)</p>
+                                            <p className="text-sm text-gray-500"><span className="font-semibold">Click para subir</span></p>
+                                            <p className="text-xs text-gray-500 mt-1">SVG, PNG, JPG o GIF (MAX. 800x400px)</p>
                                         </div>
                                         <input
                                             id="dropzone-file"
@@ -280,7 +260,7 @@ const RegisterPage = () => {
                 </div>
             </main>
         </>
-    )
-}
+    );
+};
 
-export default RegisterPage
+export default RegisterPage;

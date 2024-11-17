@@ -1,10 +1,13 @@
+import React, { useState } from 'react';
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import * as Avatar from "@radix-ui/react-avatar";
 import { useAuth } from "../../contexts/useAuth";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { Menu, X } from 'lucide-react';
 
 const Sidebar = () => {
-  const { logout } = useAuth();
+  const [isOpen, setIsOpen] = useState(false);
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -12,11 +15,10 @@ const Sidebar = () => {
     navigate('/');
   };
 
-
   const navigation = [
     {
-      href: "javascript:void(0)",
-      name: "Overview",
+      to: "/dashboard",
+      name: "Dashboard",
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -35,8 +37,8 @@ const Sidebar = () => {
       ),
     },
     {
-      href: "javascript:void(0)",
-      name: "Integration",
+      to: "/new-log",
+      name: "Nueva Bitacora",
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -50,46 +52,6 @@ const Sidebar = () => {
             strokeLinecap="round"
             strokeLinejoin="round"
             d="M14.25 6.087c0-.355.186-.676.401-.959.221-.29.349-.634.349-1.003 0-1.036-1.007-1.875-2.25-1.875s-2.25.84-2.25 1.875c0 .369.128.713.349 1.003.215.283.401.604.401.959v0a.64.64 0 01-.657.643 48.39 48.39 0 01-4.163-.3c.186 1.613.293 3.25.315 4.907a.656.656 0 01-.658.663v0c-.355 0-.676-.186-.959-.401a1.647 1.647 0 00-1.003-.349c-1.036 0-1.875 1.007-1.875 2.25s.84 2.25 1.875 2.25c.369 0 .713-.128 1.003-.349.283-.215.604-.401.959-.401v0c.31 0 .555.26.532.57a48.039 48.039 0 01-.642 5.056c1.518.19 3.058.309 4.616.354a.64.64 0 00.657-.643v0c0-.355-.186-.676-.401-.959a1.647 1.647 0 01-.349-1.003c0-1.035 1.008-1.875 2.25-1.875 1.243 0 2.25.84 2.25 1.875 0 .369-.128.713-.349 1.003-.215.283-.4.604-.4.959v0c0 .333.277.599.61.58a48.1 48.1 0 005.427-.63 48.05 48.05 0 00.582-4.717.532.532 0 00-.533-.57v0c-.355 0-.676.186-.959.401-.29.221-.634.349-1.003.349-1.035 0-1.875-1.007-1.875-2.25s.84-2.25 1.875-2.25c.37 0 .713.128 1.003.349.283.215.604.401.96.401v0a.656.656 0 00.658-.663 48.422 48.422 0 00-.37-5.36c-1.886.342-3.81.574-5.766.689a.578.578 0 01-.61-.58v0z"
-          />
-        </svg>
-      ),
-    },
-    {
-      href: "javascript:void(0)",
-      name: "Plans",
-      icon: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={1.5}
-          stroke="currentColor"
-          className="w-5 h-5"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"
-          />
-        </svg>
-      ),
-    },
-    {
-      href: "javascript:void(0)",
-      name: "Transactions",
-      icon: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={1.5}
-          stroke="currentColor"
-          className="w-5 h-5"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M6.429 9.75L2.25 12l4.179 2.25m0-4.5l5.571 3 5.571-3m-11.142 0L2.25 7.5 12 2.25l9.75 5.25-4.179 2.25m0 0L21.75 12l-4.179 2.25m0 0l4.179 2.25L12 21.75 2.25 16.5l4.179-2.25m11.142 0l-5.571 3-5.571-3"
           />
         </svg>
       ),
@@ -146,30 +108,50 @@ const Sidebar = () => {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 w-20 h-full border-r bg-white space-y-8">
+      {/* Mobile menu button */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-gray-50 hover:bg-gray-100"
+      >
+        {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+      </button>
+
+      {/* Overlay for mobile */}
+      {isOpen && (
+        <div
+          className="md:hidden fixed inset-0 bg-black/50 z-40"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <nav className={`fixed top-0 left-0 w-20 h-full border-r bg-white space-y-8 z-40 transition-transform duration-200 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'
+        } md:translate-x-0`}>
         <div className="flex flex-col h-full">
           <div className="h-20 flex items-center justify-center px-8">
-            <a href="javascript:void(0)" className="flex-none">
+            <Link to="/" className="flex-none">
               <img
                 src="https://floatui.com/logo-letter.png"
                 width={35}
                 className="mx-auto"
+                alt="Logo"
               />
-            </a>
+            </Link>
           </div>
           <div className="flex-1 flex flex-col h-full">
             <ul className="px-4 text-sm font-medium flex-1">
               {navigation.map((item, idx) => (
                 <li key={idx}>
-                  <a
-                    href={item.href}
-                    className="relative flex items-center justify-center gap-x-2 text-gray-600 p-2 rounded-lg  hover:bg-gray-50 active:bg-gray-100 duration-150 group"
+                  <Link
+                    to={item.to}
+                    className="relative flex items-center justify-center gap-x-2 text-gray-600 p-2 rounded-lg hover:bg-gray-50 active:bg-gray-100 duration-150 group"
+                    onClick={() => setIsOpen(false)}
                   >
                     <div className="text-gray-500">{item.icon}</div>
                     <span className="absolute left-14 p-1 px-1.5 rounded-md whitespace-nowrap text-xs text-white bg-gray-800 hidden group-hover:inline-block group-focus:hidden duration-150">
                       {item.name}
                     </span>
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -177,18 +159,25 @@ const Sidebar = () => {
               <ul className="px-4 pb-4 text-sm font-medium">
                 {navsFooter.map((item, idx) => (
                   <li key={idx}>
-                    <a
-                      href={item.href}
-                      className="relative flex items-center justify-center gap-x-2 text-gray-600 p-2 rounded-lg  hover:bg-gray-50 active:bg-gray-100 duration-150 group"
+                    <Link
+                      to={item.to}
+                      className="relative flex items-center justify-center gap-x-2 text-gray-600 p-2 rounded-lg hover:bg-gray-50 active:bg-gray-100 duration-150 group"
+                      onClick={() => setIsOpen(false)}
                     >
                       <div className="text-gray-500">{item.icon}</div>
                       <span className="absolute left-14 p-1 px-1.5 rounded-md whitespace-nowrap text-xs text-white bg-gray-800 hidden group-hover:inline-block group-focus:hidden duration-150">
                         {item.name}
                       </span>
-                    </a>
+                    </Link>
                   </li>
                 ))}
-                <div onClick={handleLogout} className="relative flex items-center justify-center gap-x-2 text-gray-600 p-2 rounded-lg  hover:bg-gray-50 active:bg-gray-100 duration-150 group">
+                <div
+                  onClick={() => {
+                    handleLogout();
+                    setIsOpen(false);
+                  }}
+                  className="relative flex items-center justify-center gap-x-2 text-gray-600 p-2 rounded-lg hover:bg-gray-50 active:bg-gray-100 duration-150 group cursor-pointer"
+                >
                   <div className="text-gray-500">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -216,7 +205,7 @@ const Sidebar = () => {
                     <Avatar.Root>
                       <Avatar.Image
                         className="w-12 h-12 flex items-center gap-x-4 cursor-pointer rounded-full ring-offset-2 ring-gray-800 focus:ring-2 duration-150"
-                        src="https://randomuser.me/api/portraits/women/79.jpg"
+                        src={user?.photoURL || 'https://i.pravatar.cc/150?img=1'}
                         alt="vienna"
                       />
                       <Avatar.Fallback
@@ -231,7 +220,7 @@ const Sidebar = () => {
                   <DropdownMenu.Portal>
                     <DropdownMenu.Content className="absolute bottom-4 left-10 w-64 rounded-lg bg-white shadow-md border text-sm text-gray-600 p-2">
                       <span className="block text-gray-500/80 p-2">
-                        vienna@gmail.com
+                        {user?.email || 'Correo no disponible'}
                       </span>
                       <DropdownMenu.Item asChild className="outline-none">
                         <a
@@ -263,7 +252,10 @@ const Sidebar = () => {
                         </select>
                       </div>
                       <div className="outline-none">
-                        <button onClick={handleLogout} className="block w-full p-2 text-left rounded-md hover:bg-gray-50 active:bg-gray-100 duration-150">
+                        <button
+                          onClick={handleLogout}
+                          className="block w-full p-2 text-left rounded-md hover:bg-gray-50 active:bg-gray-100 duration-150"
+                        >
                           Logout
                         </button>
                       </div>
