@@ -104,140 +104,271 @@ const BitacoraDetailPage = () => {
     }
 
     const exportToCSV = () => {
-        // Extraer toda la información de la bitácora
-        const bitacoraData = {
-            "ID": bitacora.id,
-            "Título": bitacora.title,
-            "Descripción": bitacora.description,
-            "Fecha de Creación": new Date(bitacora.createdAt).toLocaleString(),
-            "Estado": bitacora.status,
-            "Comentarios": Object.values(bitacora.comments || {}).map(comment => ({
-                "Nombre del Usuario": comment.user.name,
-                "Comentario": comment.comment,
-                "Avatar": comment.user.avatar,
-                "Fecha": new Date(comment.timestamp).toLocaleString(),
-            }))
-        };
+        // Crear arrays separados para cada sección de datos
+        const generalInfo = [{
+            Seccion: "INFORMACIÓN GENERAL",
+            Campo: "",
+            Valor: ""
+        }, {
+            Seccion: "Identificación",
+            Campo: "ID",
+            Valor: bitacora.id
+        }, {
+            Seccion: "Identificación",
+            Campo: "Título",
+            Valor: bitacora.title
+        }, {
+            Seccion: "Identificación",
+            Campo: "Fecha de Creación",
+            Valor: new Date(bitacora.createdAt).toLocaleString()
+        }, {
+            Seccion: "Identificación",
+            Campo: "Estado",
+            Valor: bitacora.status ? "Activo" : "Inactivo"
+        }, {
+            Seccion: "Identificación",
+            Campo: "Notas Adicionales",
+            Valor: bitacora.additionalNotes
+        }, {
+            Seccion: "",
+            Campo: "",
+            Valor: ""
+        }, {
+            Seccion: "INFORMACIÓN DEL CLIMA",
+            Campo: "",
+            Valor: ""
+        }, {
+            Seccion: "Clima",
+            Campo: "Temperatura",
+            Valor: `${bitacora.weather.temperature}°C`
+        }, {
+            Seccion: "Clima",
+            Campo: "Humedad",
+            Valor: `${bitacora.weather.humidity}%`
+        }, {
+            Seccion: "Clima",
+            Campo: "Cobertura de Nubes",
+            Valor: bitacora.weather.cloudCover
+        }, {
+            Seccion: "Clima",
+            Campo: "Velocidad del Viento",
+            Valor: `${bitacora.weather.windSpeed} km/h`
+        }, {
+            Seccion: "",
+            Campo: "",
+            Valor: ""
+        }, {
+            Seccion: "INFORMACIÓN DEL HÁBITAT",
+            Campo: "",
+            Valor: ""
+        }, {
+            Seccion: "Hábitat",
+            Campo: "Altitud",
+            Valor: `${bitacora.habitat.altitude} m`
+        }, {
+            Seccion: "Hábitat",
+            Campo: "Tipo de Suelo",
+            Valor: bitacora.habitat.soilType
+        }, {
+            Seccion: "Hábitat",
+            Campo: "Tipo de Vegetación",
+            Valor: bitacora.habitat.vegetationType
+        }, {
+            Seccion: "Hábitat",
+            Campo: "Cuerpos de Agua",
+            Valor: bitacora.habitat.waterBodies
+        }, {
+            Seccion: "",
+            Campo: "",
+            Valor: ""
+        }, {
+            Seccion: "UBICACIÓN",
+            Campo: "",
+            Valor: ""
+        }, {
+            Seccion: "Ubicación",
+            Campo: "Latitud",
+            Valor: bitacora.location.latitude
+        }, {
+            Seccion: "Ubicación",
+            Campo: "Longitud",
+            Valor: bitacora.location.longitude
+        }];
 
-        // Convertir a CSV
-        const csv = Papa.unparse([bitacoraData]);
+        // Preparar datos de especies
+        const speciesData = [{
+            Seccion: "",
+            Campo: "",
+            Valor: ""
+        }, {
+            Seccion: "ESPECIES RECOLECTADAS",
+            Campo: "",
+            Valor: ""
+        }];
 
-        // Crear un archivo descargable
-        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        bitacora.collectedSpecies.forEach((species, index) => {
+            speciesData.push({
+                Seccion: `Especie ${index + 1}`,
+                Campo: "Nombre Común",
+                Valor: species.commonName
+            }, {
+                Seccion: `Especie ${index + 1}`,
+                Campo: "Nombre Científico",
+                Valor: species.scientificName
+            }, {
+                Seccion: `Especie ${index + 1}`,
+                Campo: "Familia",
+                Valor: species.family
+            }, {
+                Seccion: `Especie ${index + 1}`,
+                Campo: "Estado",
+                Valor: species.status
+            }, {
+                Seccion: `Especie ${index + 1}`,
+                Campo: "Cantidad",
+                Valor: species.quantity
+            });
+        });
+
+        // Preparar datos de comentarios
+        const commentsData = [{
+            Seccion: "",
+            Campo: "",
+            Valor: ""
+        }, {
+            Seccion: "COMENTARIOS",
+            Campo: "",
+            Valor: ""
+        }];
+
+        Object.values(bitacora.comments || {}).forEach((comment, index) => {
+            commentsData.push({
+                Seccion: `Comentario ${index + 1}`,
+                Campo: "Usuario",
+                Valor: comment.user.name
+            }, {
+                Seccion: `Comentario ${index + 1}`,
+                Campo: "Comentario",
+                Valor: comment.comment
+            }, {
+                Seccion: `Comentario ${index + 1}`,
+                Campo: "Fecha",
+                Valor: new Date(comment.timestamp).toLocaleString()
+            });
+        });
+
+        // Combinar todos los datos
+        const allData = [...generalInfo, ...speciesData, ...commentsData];
+
+        // Convertir a CSV con configuración específica
+        const csv = Papa.unparse(allData, {
+            quotes: true, // Envolver campos en comillas
+            delimiter: ",", // Usar coma como delimitador
+        });
+
+        // Crear y descargar el archivo
+        const blob = new Blob(["\ufeff", csv], {
+            type: "text/csv;charset=utf-8-sig;"
+        });
+        const url = window.URL.createObjectURL(blob);
         const link = document.createElement("a");
-        if (link.download !== undefined) {
-            const url = URL.createObjectURL(blob);
-            link.setAttribute("href", url);
-            link.setAttribute("download", "bitacora_detalle.csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
+        link.setAttribute("href", url);
+        link.setAttribute("download", `bitacora_${bitacora.id}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
     };
 
 
     const exportToPDF = () => {
         const doc = new jsPDF();
         let y = 10;  // posición inicial vertical
+        const pageHeight = doc.internal.pageSize.height;
+        const margin = 10;
+
+        // Función auxiliar para verificar y agregar nueva página si es necesario
+        const checkAndAddPage = (requiredSpace) => {
+            if (y + requiredSpace > pageHeight - margin) {
+                doc.addPage();
+                y = 10;
+                return true;
+            }
+            return false;
+        };
+
+        // Función auxiliar para agregar texto con control de página
+        const addText = (text, xPos, yIncrement = 10, indent = 0) => {
+            checkAndAddPage(yIncrement);
+            doc.text(text, xPos + indent, y);
+            y += yIncrement;
+        };
+
+        // Configuración inicial
         doc.setFontSize(12);
 
-        // Agregar detalles de la bitácora al PDF
-        doc.text(`ID: ${bitacora.id}`, 10, y);
-        y += 10;
-        doc.text(`Título: ${bitacora.title}`, 10, y);
-        y += 10;
-        doc.text(`Fecha de Creación: ${new Date(bitacora.createdAt).toLocaleString()}`, 10, y);
-        y += 10;
+        // Información básica
+        addText(`ID: ${bitacora.id}`, margin);
+        addText(`Título: ${bitacora.title}`, margin);
+        addText(`Fecha de Creación: ${new Date(bitacora.createdAt).toLocaleString()}`, margin);
 
         // Estado de la bitácora
         const estado = bitacora.status ? "Activa" : "Inactiva";
-        doc.text(`Estado: ${estado}`, 10, y);
-        y += 10;
-
-        // Notas adicionales
-        doc.text(`Notas adicionales: ${bitacora.additionalNotes}`, 10, y);
-        y += 10;
+        addText(`Estado: ${estado}`, margin);
+        addText(`Notas adicionales: ${bitacora.additionalNotes}`, margin);
 
         // Colaboradores
-        doc.text("Colaboradores:", 10, y);
-        y += 10;
+        addText("Colaboradores:", margin);
         bitacora.collaborators.forEach(collaborator => {
-            doc.text(`Nombre: ${collaborator.firstName} ${collaborator.lastName}`, 30, y);
-            y += 6;
-            doc.text(`Correo: ${collaborator.email}`, 30, y);
-            y += 6;
-            doc.text(`Rol: ${collaborator.role}`, 30, y);
-            y += 10;
+            checkAndAddPage(30);  // Espacio necesario para cada colaborador
+            addText(`Nombre: ${collaborator.firstName} ${collaborator.lastName}`, margin, 6, 20);
+            addText(`Correo: ${collaborator.email}`, margin, 6, 20);
+            addText(`Rol: ${collaborator.role}`, margin, 10, 20);
         });
 
         // Especies recolectadas
-        doc.text("Especies recolectadas:", 10, y);
-        y += 10;
+        addText("Especies recolectadas:", margin);
         bitacora.collectedSpecies.forEach(species => {
-            doc.text(`Nombre común: ${species.commonName}`, 30, y);
-            y += 6;
-            doc.text(`Nombre científico: ${species.scientificName}`, 30, y);
-            y += 6;
-            doc.text(`Estado: ${species.status}`, 30, y);
-            y += 6;
-            doc.text(`Familia: ${species.family}`, 30, y);
-            y += 6;
-            doc.text(`Cantidad: ${species.quantity}`, 30, y);
-            y += 10;
+            checkAndAddPage(40);  // Espacio necesario para cada especie
+            addText(`Nombre común: ${species.commonName}`, margin, 6, 20);
+            addText(`Nombre científico: ${species.scientificName}`, margin, 6, 20);
+            addText(`Estado: ${species.status}`, margin, 6, 20);
+            addText(`Familia: ${species.family}`, margin, 6, 20);
+            addText(`Cantidad: ${species.quantity}`, margin, 10, 20);
         });
 
         // Comentarios
-        doc.text("Comentarios:", 10, y);
-        y += 10;
+        addText("Comentarios:", margin);
         Object.values(bitacora.comments || {}).forEach(comment => {
-            doc.text(`Usuario: ${comment.user.name}`, 30, y);
-            y += 6;
-            doc.text(`Comentario: ${comment.comment}`, 30, y);
-            y += 6;
-            doc.text(`Fecha: ${new Date(comment.timestamp).toLocaleString()}`, 30, y);
-            y += 12;
-
-            if (y > 270) {
-                doc.addPage();
-                y = 10;
-            }
+            checkAndAddPage(30);  // Espacio necesario para cada comentario
+            addText(`Usuario: ${comment.user.name}`, margin, 6, 20);
+            addText(`Comentario: ${comment.comment}`, margin, 6, 20);
+            addText(`Fecha: ${new Date(comment.timestamp).toLocaleString()}`, margin, 12, 20);
         });
 
         // Información del hábitat
-        doc.text("Hábitat:", 10, y);
-        y += 10;
-        doc.text(`Altitud: ${bitacora.habitat.altitude}`, 30, y);
-        y += 6;
-        doc.text(`Descripción: ${bitacora.habitat.description}`, 30, y);
-        y += 6;
-        doc.text(`Tipo de suelo: ${bitacora.habitat.soilType}`, 30, y);
-        y += 6;
-        doc.text(`Tipo de vegetación: ${bitacora.habitat.vegetationType}`, 30, y);
-        y += 6;
-        doc.text(`Cuerpos de agua: ${bitacora.habitat.waterBodies}`, 30, y);
-        y += 10;
+        checkAndAddPage(50);  // Espacio necesario para la sección de hábitat
+        addText("Hábitat:", margin);
+        addText(`Altitud: ${bitacora.habitat.altitude}`, margin, 6, 20);
+        addText(`Descripción: ${bitacora.habitat.description}`, margin, 6, 20);
+        addText(`Tipo de suelo: ${bitacora.habitat.soilType}`, margin, 6, 20);
+        addText(`Tipo de vegetación: ${bitacora.habitat.vegetationType}`, margin, 6, 20);
+        addText(`Cuerpos de agua: ${bitacora.habitat.waterBodies}`, margin, 10, 20);
 
-        // Ubicación (latitud y longitud)
-        doc.text("Ubicación:", 10, y);
-        y += 10;
-        doc.text(`Latitud: ${bitacora.location.latitude}`, 30, y);
-        y += 6;
-        doc.text(`Longitud: ${bitacora.location.longitude}`, 30, y);
-        y += 10;
+        // Ubicación
+        checkAndAddPage(30);  // Espacio necesario para la sección de ubicación
+        addText("Ubicación:", margin);
+        addText(`Latitud: ${bitacora.location.latitude}`, margin, 6, 20);
+        addText(`Longitud: ${bitacora.location.longitude}`, margin, 10, 20);
 
         // Información meteorológica
-        doc.text("Condiciones meteorológicas:", 10, y);
-        y += 10;
-        doc.text(`Temperatura: ${bitacora.weather.temperature}°C`, 30, y);
-        y += 6;
-        doc.text(`Humedad: ${bitacora.weather.humidity}%`, 30, y);
-        y += 6;
-        doc.text(`Velocidad del viento: ${bitacora.weather.windSpeed} km/h`, 30, y);
-        y += 6;
-        doc.text(`Nubosidad: ${bitacora.weather.cloudCover}`, 30, y);
-        y += 6;
-        doc.text(`Precipitación: ${bitacora.weather.precipitation || "No aplica"}`, 30, y);
-        y += 10;
+        checkAndAddPage(50);  // Espacio necesario para la sección meteorológica
+        addText("Condiciones meteorológicas:", margin);
+        addText(`Temperatura: ${bitacora.weather.temperature}°C`, margin, 6, 20);
+        addText(`Humedad: ${bitacora.weather.humidity}%`, margin, 6, 20);
+        addText(`Velocidad del viento: ${bitacora.weather.windSpeed} km/h`, margin, 6, 20);
+        addText(`Nubosidad: ${bitacora.weather.cloudCover}`, margin, 6, 20);
+        addText(`Precipitación: ${bitacora.weather.precipitation || "No aplica"}`, margin, 10, 20);
 
         // Guardar el archivo PDF
         doc.save("bitacora_detalle.pdf");
