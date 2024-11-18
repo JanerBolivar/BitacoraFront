@@ -37,7 +37,7 @@ const Sidebar = () => {
       ),
     },
     {
-      to: "/new-log",
+      to: "/logs/new",
       name: "Nueva Bitacora",
       icon: (
         <svg
@@ -106,6 +106,8 @@ const Sidebar = () => {
     },
   ];
 
+  const isInvestigator = user.role === "investigador";
+
   return (
     <>
       {/* Mobile menu button */}
@@ -140,37 +142,31 @@ const Sidebar = () => {
           </div>
           <div className="flex-1 flex flex-col h-full">
             <ul className="px-4 text-sm font-medium flex-1">
-              {navigation.map((item, idx) => (
-                <li key={idx}>
-                  <Link
-                    to={item.to}
-                    className="relative flex items-center justify-center gap-x-2 text-gray-600 p-2 rounded-lg hover:bg-gray-50 active:bg-gray-100 duration-150 group"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    <div className="text-gray-500">{item.icon}</div>
-                    <span className="absolute left-14 p-1 px-1.5 rounded-md whitespace-nowrap text-xs text-white bg-gray-800 hidden group-hover:inline-block group-focus:hidden duration-150">
-                      {item.name}
-                    </span>
-                  </Link>
-                </li>
-              ))}
+              <Link
+                to={navigation[0].to}
+                className="relative flex items-center justify-center gap-x-2 text-gray-600 p-2 rounded-lg hover:bg-gray-50 active:bg-gray-100 duration-150 group"
+                onClick={() => setIsOpen(false)}
+              >
+                <div className="text-gray-500">{navigation[0].icon}</div>
+                <span className="absolute left-14 p-1 px-1.5 rounded-md whitespace-nowrap text-xs text-white bg-gray-800 hidden group-hover:inline-block group-focus:hidden duration-150">
+                  {navigation[0].name}
+                </span>
+              </Link>
+              {isInvestigator && (
+                <Link
+                  to={navigation[1].to}
+                  className="relative flex items-center justify-center gap-x-2 text-gray-600 p-2 rounded-lg hover:bg-gray-50 active:bg-gray-100 duration-150 group"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <div className="text-gray-500">{navigation[1].icon}</div>
+                  <span className="absolute left-14 p-1 px-1.5 rounded-md whitespace-nowrap text-xs text-white bg-gray-800 hidden group-hover:inline-block group-focus:hidden duration-150">
+                    {navigation[1].name}
+                  </span>
+                </Link>
+              )}
             </ul>
             <div>
               <ul className="px-4 pb-4 text-sm font-medium">
-                {navsFooter.map((item, idx) => (
-                  <li key={idx}>
-                    <Link
-                      to={item.to}
-                      className="relative flex items-center justify-center gap-x-2 text-gray-600 p-2 rounded-lg hover:bg-gray-50 active:bg-gray-100 duration-150 group"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      <div className="text-gray-500">{item.icon}</div>
-                      <span className="absolute left-14 p-1 px-1.5 rounded-md whitespace-nowrap text-xs text-white bg-gray-800 hidden group-hover:inline-block group-focus:hidden duration-150">
-                        {item.name}
-                      </span>
-                    </Link>
-                  </li>
-                ))}
                 <div
                   onClick={() => {
                     handleLogout();

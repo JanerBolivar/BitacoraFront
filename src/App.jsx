@@ -5,9 +5,11 @@ import HomePage from './pages/HomePage/HomePage';
 import LoginPage from "./pages/LoginPage/LoginPage";
 import RegisterPage from "./pages/RegisterPage/RegisterPage";
 import ProtectedRoute from "./components/Components/ProtectedRoute";
+import ProtectorInv from "./components/Components/ProtectorInv";
 import DashboardLayout from "./components/Layouts/DashboardLayout";
 import DashboardPage from "./pages/DashboardPage/DashboardPage";
-import NewLogPage from "./pages/NewLogPage/NewLogPage";
+import LogPage from "./pages/NewLogPage/NewLogPage";
+import BitacoraDetailPage from "./pages/BitacoraDetailPage/BitacoraDetailPage";
 
 function App() {
     return (
@@ -31,12 +33,38 @@ function App() {
                         }
                     />
                     <Route
-                        path="/new-log"
+                        path="/logs/new"
                         element={
                             <ProtectedRoute
                                 element={
                                     <DashboardLayout>
-                                        <NewLogPage />
+                                        <ProtectorInv>
+                                            <LogPage />
+                                        </ProtectorInv>
+                                    </DashboardLayout>
+                                }
+                            />
+                        }
+                    />
+                    <Route
+                        path="/logs/edit/:id"
+                        element={
+                            <ProtectedRoute
+                                element={
+                                    <DashboardLayout>
+                                        <LogPage />
+                                    </DashboardLayout>
+                                }
+                            />
+                        }
+                    />
+                    <Route
+                        path="/log-information/:id"
+                        element={
+                            <ProtectedRoute
+                                element={
+                                    <DashboardLayout>
+                                        <BitacoraDetailPage />
                                     </DashboardLayout>
                                 }
                             />

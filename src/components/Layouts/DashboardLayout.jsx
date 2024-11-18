@@ -4,7 +4,7 @@ const DashboardLayout = ({ children }) => {
     return (
         <div className="flex flex-col md:flex-row min-h-screen">
             <Sidebar />
-            <div className="flex-1 p-5 md:ml-20 overflow-auto">
+            <div className="flex-1 md:ml-20 overflow-auto">
                 {children}
             </div>
         </div>

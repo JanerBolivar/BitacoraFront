@@ -1,11 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Head } from "../../components/Components/Head";
 import SpeciesDetailsModal from "../../components/Components/SpeciesDetailsModal";
 
-const NewLogPage = ({ onAddEntry }) => {
+import CollaboratorsSection from "../../components/Components/CollaboratorsSection";
+
+import { useAuth } from "../../contexts/useAuth";
+
+const LogPage = () => {
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const { user } = useAuth();
+    const isEditMode = !!id;
+
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [initialLoading, setInitialLoading] = useState(isEditMode);
     const [formData, setFormData] = useState({
         title: '',
         date: '',
@@ -31,16 +42,39 @@ const NewLogPage = ({ onAddEntry }) => {
         },
         sitePhotos: [],
         collectedSpecies: [],
-        additionalNotes: ''
+        additionalNotes: '',
+        collaborators: [],
+        owner: user
     });
 
     const [isSpeciesModalOpen, setIsSpeciesModalOpen] = useState(false);
-
     const [isDragging, setIsDragging] = useState(false);
+
+    // Cargar datos existentes si estamos en modo edición
+    useEffect(() => {
+        const fetchLogData = async () => {
+            if (isEditMode) {
+                try {
+                    const response = await axios.get(`/api/log/field-logs/${id}`);
+
+                    // Actualizar el estado con los datos recibidos y los archivos
+                    setFormData({
+                        ...response.data,
+                    });
+                } catch (err) {
+                    setError("Error al cargar los datos de la bitácora");
+                    console.error("Error fetching log data:", err);
+                } finally {
+                    setInitialLoading(false);
+                }
+            }
+        };
+
+        fetchLogData();
+    }, [id, isEditMode]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        // Handle nested objects
         if (name.includes('.')) {
             const [parent, child] = name.split('.');
             setFormData(prev => ({
@@ -63,25 +97,22 @@ const NewLogPage = ({ onAddEntry }) => {
         try {
             const formDataToSend = new FormData();
 
-            // Agregar los datos principales como JSON string
             formDataToSend.append('data', JSON.stringify({
                 ...formData,
-                sitePhotos: [], // Vaciamos los arrays de fotos porque se enviarán por separado
+                sitePhotos: [],
                 collectedSpecies: formData.collectedSpecies.map(species => ({
                     ...species,
-                    photos: [] // Vaciamos las fotos de especies también
+                    photos: []
                 }))
             }));
 
-            // Agregar fotos del sitio
             if (formData.sitePhotos?.length > 0) {
-                formData.sitePhotos.forEach((photo, index) => {
+                formData.sitePhotos.forEach((photo) => {
                     formDataToSend.append('sitePhotos', photo);
                 });
             }
 
-            // Agregar fotos de especies
-            formData.collectedSpecies.forEach((species, speciesIndex) => {
+            formData.collectedSpecies.forEach((species) => {
                 if (species.photos?.length > 0) {
                     species.photos.forEach((photo) => {
                         formDataToSend.append('speciesPhotos[]', photo);
@@ -101,11 +132,14 @@ const NewLogPage = ({ onAddEntry }) => {
                 },
             };
 
-            const response = await axios.post('/api/log/new-field-logs', formDataToSend, config);
+            let response;
+            if (isEditMode) {
+                response = await axios.post(`/api/log/update-field-logs/${id}`, formDataToSend, config);
+            } else {
+                response = await axios.post('/api/log/new-field-logs', formDataToSend, config);
+            }
 
-            console.log('Bitácora guardada:', response.data);
-
-            // Aquí puedes agregar el manejo de éxito (redirección, mensaje, etc.)
+            navigate('/dashboard');
 
         } catch (err) {
             const errorMessage = err.response?.data?.message || err.message || 'Error al guardar la bitácora';
@@ -115,6 +149,14 @@ const NewLogPage = ({ onAddEntry }) => {
             setLoading(false);
         }
     };
+
+    if (initialLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-500"></div>
+            </div>
+        );
+    }
 
     const toggleSpeciesModal = () => {
         setIsSpeciesModalOpen((prevState) => !prevState);
@@ -178,23 +220,49 @@ const NewLogPage = ({ onAddEntry }) => {
         }
     };
 
+    const handleCancel = () => {
+        navigate('/dashboard');
+    };
+
+    const handleAddCollaborator = (user) => {
+        setFormData(prev => ({
+            ...prev,
+            collaborators: [...prev.collaborators, user]
+        }));
+    };
+
+    const handleRemoveCollaborator = (userId) => {
+        setFormData(prev => ({
+            ...prev,
+            collaborators: prev.collaborators.filter(c => c.id !== userId)
+        }));
+    };
+
     return (
         <>
             <Head
-                newtitle="Crear Bitácora"
+                newtitle={isEditMode ? "Editar Bitácora" : "Crear Bitácora"}
                 newdescription="Crea nuevas bitácoras de campo para registrar y organizar tus actividades."
                 newkeywords="crear bitácora, registro de campo, nueva bitácora, actividades"
             />
-            
+
             <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-4xl mx-auto">
                     {/* Header */}
                     <div className="text-center mb-8">
-                        <h2 className="text-3xl font-bold text-gray-900">Nueva Entrada de Bitácora</h2>
+                        <h2 className="text-3xl font-bold text-gray-900">
+                            {isEditMode ? "Editar Bitácora" : "Nueva Entrada de Bitácora"}
+                        </h2>
                         <p className="mt-2 text-sm text-gray-600">
-                            Complete los detalles del muestreo
+                            {isEditMode ? "Modifique los detalles de la bitácora" : "Complete los detalles del muestreo"}
                         </p>
                     </div>
+
+                    {error && (
+                        <div className="mb-4 p-4 text-red-700 bg-red-100 rounded-md">
+                            {error}
+                        </div>
+                    )}
 
                     {/* Main Form */}
                     <form onSubmit={handleSubmit} className="bg-white shadow-md rounded-lg p-8 space-y-6">
@@ -460,7 +528,7 @@ const NewLogPage = ({ onAddEntry }) => {
                                         </label>
                                         <p className="pl-1">o arrastrar y soltar</p>
                                     </div>
-                                    <p className="text-xs text-gray-500">PNG, JPG, GIF hasta 10MB</p>
+                                    <p className="text-xs text-gray-500">PNG, JPG hasta 5MB</p>
                                 </div>
                             </div>
                         </div>
@@ -566,10 +634,18 @@ const NewLogPage = ({ onAddEntry }) => {
                             />
                         </div>
 
+                        {/* Colaboradores */}
+                        <CollaboratorsSection
+                            collaborators={formData.collaborators}
+                            onCollaboratorAdd={handleAddCollaborator}
+                            onCollaboratorRemove={handleRemoveCollaborator}
+                        />
+
                         {/* Botones de Acción */}
                         <div className="border-t border-gray-200 pt-6 flex justify-end space-x-3">
                             <button
                                 type="button"
+                                onClick={handleCancel}
                                 className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                             >
                                 Cancelar
@@ -585,10 +661,10 @@ const NewLogPage = ({ onAddEntry }) => {
                                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                         </svg>
-                                        Guardando...
+                                        {isEditMode ? 'Actualizando...' : 'Guardando...'}
                                     </>
                                 ) : (
-                                    'Guardar Entrada'
+                                    isEditMode ? 'Actualizar Bitácora' : 'Guardar Entrada'
                                 )}
                             </button>
                         </div>
@@ -605,4 +681,4 @@ const NewLogPage = ({ onAddEntry }) => {
     );
 };
 
-export default NewLogPage;
+export default LogPage;
