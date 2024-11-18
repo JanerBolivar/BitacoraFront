@@ -4,12 +4,14 @@ import { AuthProvider } from "./contexts/AuthContext";
 import HomePage from './pages/HomePage/HomePage';
 import LoginPage from "./pages/LoginPage/LoginPage";
 import RegisterPage from "./pages/RegisterPage/RegisterPage";
-import ProtectedRoute from "./components/Components/ProtectedRoute";
-import ProtectorInv from "./components/Components/ProtectorInv";
+import { ProtectedAuthenticator, ProtectedLogs, ProtectedManage } from "./components/Components/ProtectedRoute";
 import DashboardLayout from "./components/Layouts/DashboardLayout";
 import DashboardPage from "./pages/DashboardPage/DashboardPage";
 import LogPage from "./pages/NewLogPage/NewLogPage";
 import BitacoraDetailPage from "./pages/BitacoraDetailPage/BitacoraDetailPage";
+import ManageUsersPage from "./pages/ManageUsersPage/ManageUsersPage";
+
+import CreateUserAdmin from "./pages/CreateUserAdmin/CreateUserAdmin";
 
 function App() {
     return (
@@ -23,7 +25,7 @@ function App() {
                     <Route
                         path="/dashboard"
                         element={
-                            <ProtectedRoute
+                            <ProtectedAuthenticator
                                 element={
                                     <DashboardLayout>
                                         <DashboardPage />
@@ -33,14 +35,42 @@ function App() {
                         }
                     />
                     <Route
-                        path="/logs/new"
+                        path="/manage-users"
                         element={
-                            <ProtectedRoute
+                            <ProtectedAuthenticator
                                 element={
                                     <DashboardLayout>
-                                        <ProtectorInv>
+                                        <ProtectedManage>
+                                            <ManageUsersPage />
+                                        </ProtectedManage>
+                                    </DashboardLayout>
+                                }
+                            />
+                        }
+                    />
+                    <Route
+                        path="/manage/create-user"
+                        element={
+                            <ProtectedAuthenticator
+                                element={
+                                    <DashboardLayout>
+                                        <ProtectedManage>
+                                            <CreateUserAdmin />
+                                        </ProtectedManage>
+                                    </DashboardLayout>
+                                }
+                            />
+                        }
+                    />
+                    <Route
+                        path="/logs/new"
+                        element={
+                            <ProtectedAuthenticator
+                                element={
+                                    <DashboardLayout>
+                                        <ProtectedLogs>
                                             <LogPage />
-                                        </ProtectorInv>
+                                        </ProtectedLogs>
                                     </DashboardLayout>
                                 }
                             />
@@ -49,7 +79,7 @@ function App() {
                     <Route
                         path="/logs/edit/:id"
                         element={
-                            <ProtectedRoute
+                            <ProtectedAuthenticator
                                 element={
                                     <DashboardLayout>
                                         <LogPage />
@@ -61,7 +91,7 @@ function App() {
                     <Route
                         path="/log-information/:id"
                         element={
-                            <ProtectedRoute
+                            <ProtectedAuthenticator
                                 element={
                                     <DashboardLayout>
                                         <BitacoraDetailPage />

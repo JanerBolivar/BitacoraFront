@@ -5,6 +5,7 @@ import axios from 'axios';
 import { useAuth } from "../../contexts/useAuth";
 import Papa from "papaparse";
 import { jsPDF } from "jspdf";
+import LocationMap from '../../components/Components/LocationMap';
 
 const BitacoraDetailPage = () => {
     const [selectedPhoto, setSelectedPhoto] = useState(0);
@@ -42,6 +43,7 @@ const BitacoraDetailPage = () => {
     // Verifica si la bitácora y los datos del usuario están disponibles
     const isOwner = bitacora?.owner?.uid === user?.uid;
     const isCollaborator = bitacora?.collaborators?.some(collaborator => collaborator?.uid === user?.uid);
+    const isAdmin = user?.role === 'administrador';
 
 
     // Función para actualizar la foto seleccionada de una especie específica
@@ -256,7 +258,7 @@ const BitacoraDetailPage = () => {
                             <span className="text-sm font-medium">Volver</span>
                         </button>
                         {
-                            (isOwner || isCollaborator) && (
+                            (isOwner || isCollaborator || isAdmin) && (
                                 <div className="flex gap-2">
                                     <button
                                         className="flex items-center gap-2 text-blue-600 hover:text-blue-700 p-2 rounded-lg hover:bg-blue-50 transition-colors"
@@ -294,7 +296,7 @@ const BitacoraDetailPage = () => {
                                         key={index}
                                         className={`aspect-square rounded border-2 overflow-hidden ${selectedPhoto === index ? 'border-blue-500' : 'border-gray-200'
                                             }`}
-                                        onClick={() => setSelectedPhoto(index)} // Cambiar la imagen principal al hacer clic
+                                        onClick={() => setSelectedPhoto(index)}
                                     >
                                         <img
                                             src={photo} // Miniatura
@@ -316,11 +318,12 @@ const BitacoraDetailPage = () => {
                                     <span>{bitacora.time}</span>
                                 </div>
                                 <h1 className="text-3xl font-bold mt-2">{bitacora.title}</h1>
-                                <div className="flex items-center gap-2 mt-2">
-                                    <MapPin className="w-4 h-4 text-gray-600" />
-                                    <span className="text-gray-600">
-                                        Coordenadas: {bitacora.location.latitude}, {bitacora.location.longitude}
-                                    </span>
+                                <div className="mt-2">
+                                    <LocationMap
+                                        latitude={bitacora.location.latitude}
+                                        longitude={bitacora.location.longitude}
+                                        title={bitacora.title}
+                                    />
                                 </div>
                             </div>
 

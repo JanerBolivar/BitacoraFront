@@ -1,200 +1,137 @@
-import { useState } from 'react';
-import { useNavigate, useLocation, useParams } from 'react-router-dom';
-import { Calendar, Clock, MapPin, ThermometerSun, ArrowLeft, Edit2, Trash2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import UserEditModal from '../../components/Components/UserEditModal';
 
-const BitacoraDetailPage = () => {
-    const [selectedPhoto, setSelectedPhoto] = useState(0);
-    const navigate = useNavigate();
-    const { id } = useParams();
-    const location = useLocation();
-    const { data } = location.state;
+const PagePrueba = () => {
+    const [users, setUsers] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const fetchUsers = async () => {
+        try {
+            const response = await axios.get('/api/user/users');
+            setUsers(response.data);
+            setIsLoading(false);
+        } catch (err) {
+            setError(err);
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchUsers();
+    }, []);
+
+    const handleEditClick = (user) => {
+        setSelectedUser(user);
+        setIsModalOpen(true);
+    };
+
+    const handleModalClose = () => {
+        setIsModalOpen(false);
+        setSelectedUser(null);
+        fetchUsers();
+    };
+
+    if (isLoading) return <div className="text-center py-4">Cargando usuarios...</div>;
+
+    if (error) return <div className="text-red-500 text-center py-4">Error al cargar usuarios</div>;
 
     return (
-        <div className="min-h-screen bg-gray-50 p-4">
-            <div className="max-w-7xl mx-auto">
-                <div className="bg-white rounded-lg shadow-lg p-6">
-                    {/* Sección de navegación */}
-                    <div className="flex justify-between items-center mb-6">
-                        <button
-                            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                            onClick={() => navigate(-1)} // Navega a la página anterior
-                        >
-                            <ArrowLeft className="w-5 h-5" />
-                            <span className="text-sm font-medium">Volver</span>
-                        </button>
-
-                        <div className="flex gap-2">
-                            <button
-                                className="flex items-center gap-2 text-blue-600 hover:text-blue-700 p-2 rounded-lg hover:bg-blue-50 transition-colors"
-                                onClick={() => {/* handle edit */ }}
-                            >
-                                <Edit2 className="w-5 h-5" />
-                                <span className="text-sm font-medium">Editar</span>
-                            </button>
-                            <button
-                                className="flex items-center gap-2 text-red-600 hover:text-red-700 p-2 rounded-lg hover:bg-red-50 transition-colors"
-                                onClick={() => {/* handle delete */ }}
-                            >
-                                <Trash2 className="w-5 h-5" />
-                                <span className="text-sm font-medium">Eliminar</span>
-                            </button>
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="space-y-4">
-                            {/* Imagen principal */}
-                            <div className="aspect-square w-full rounded-lg overflow-hidden bg-gray-100">
-                                <img
-                                    src={data.sitePhotos[selectedPhoto]} // Imagen seleccionada
-                                    alt="Sitio de bitácora"
-                                    className="w-full h-full object-cover"
-                                />
-                            </div>
-
-                            {/* Miniaturas */}
-                            <div className="grid grid-cols-6 gap-2">
-                                {data.sitePhotos.map((photo, index) => (
-                                    <button
-                                        key={index}
-                                        className={`aspect-square rounded border-2 overflow-hidden ${selectedPhoto === index ? 'border-blue-500' : 'border-gray-200'
-                                            }`}
-                                        onClick={() => setSelectedPhoto(index)} // Cambiar la imagen principal al hacer clic
-                                    >
-                                        <img
-                                            src={photo} // Miniatura
-                                            alt={`Vista ${index + 1}`}
-                                            className="w-full h-full object-cover"
-                                        />
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Información principal */}
-                        <div className="space-y-6">
-                            <div>
-                                <div className="flex items-center gap-2 text-sm text-gray-600">
-                                    <Calendar className="w-4 h-4" />
-                                    <span>{data.date}</span>
-                                    <Clock className="w-4 h-4 ml-2" />
-                                    <span>{data.time}</span>
-                                </div>
-                                <h1 className="text-3xl font-bold mt-2">{data.title}</h1>
-                                <div className="flex items-center gap-2 mt-2">
-                                    <MapPin className="w-4 h-4 text-gray-600" />
-                                    <span className="text-gray-600">
-                                        Coordenadas: {data.location.latitude}, {data.location.longitude}
-                                    </span>
-                                </div>
-                            </div>
-
-                            {/* Información del clima */}
-                            <div className="border-t border-b py-4">
-                                <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                                    <ThermometerSun className="w-5 h-5" />
-                                    Condiciones Climáticas
-                                </h2>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <p className="text-gray-600">Temperatura</p>
-                                        <p className="font-medium">{data.weather.temperature}°C</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-gray-600">Humedad</p>
-                                        <p className="font-medium">{data.weather.humidity}%</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-gray-600">Cielo</p>
-                                        <p className="font-medium">{data.weather.cloudCover}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-gray-600">Viento</p>
-                                        <p className="font-medium">{data.weather.windSpeed} km/h</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Información del hábitat */}
-                            <div>
-                                <h2 className="text-lg font-semibold mb-3">Información del Hábitat</h2>
-                                <div className="space-y-2">
-                                    <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-                                        <div>
-                                            <p className="text-gray-600">Altitud</p>
-                                            <p className="font-medium">{data.habitat.altitude}m</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-gray-600">Tipo de Suelo</p>
-                                            <p className="font-medium">{data.habitat.soilType}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-gray-600">Vegetación</p>
-                                            <p className="font-medium">{data.habitat.vegetationType}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-gray-600">Cuerpos de Agua</p>
-                                            <p className="font-medium">{data.habitat.waterBodies}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Especies recolectadas */}
-                    <div className="mt-8">
-                        <h2 className="text-xl font-bold mb-4">Especies Recolectadas</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {data.collectedSpecies.map((species, index) => {
-                                const [selectedPhoto, setSelectedPhoto] = useState(species.photos[0]); // Foto seleccionada
-
-                                return (
-                                    <div key={index} className="border rounded-lg p-4">
-                                        {/* Foto principal seleccionada */}
-                                        <div className="aspect-video w-full mb-4 rounded-lg overflow-hidden bg-gray-100">
-                                            <img
-                                                src={selectedPhoto} // Mostrar la foto seleccionada
-                                                alt={species.commonName}
-                                                className="w-full h-full object-cover"
-                                            />
-                                        </div>
-                                        {/* Información de la especie */}
-                                        <h3 className="font-semibold text-lg">{species.commonName}</h3>
-                                        <div className="mt-2 space-y-1 text-sm">
-                                            <p><span className="text-gray-600">Nombre científico:</span> {species.scientificName}</p>
-                                            <p><span className="text-gray-600">Familia:</span> {species.family}</p>
-                                            <p><span className="text-gray-600">Estado:</span> {species.status}</p>
-                                            <p><span className="text-gray-600">Cantidad:</span> {species.quantity}</p>
-                                        </div>
-                                        {/* Galería de fotos */}
-                                        <div className="mt-4">
-                                            <h4 className="text-sm font-semibold mb-2">Fotos:</h4>
-                                            <div className="grid grid-cols-3 gap-2">
-                                                {species.photos.map((photo, photoIndex) => (
-                                                    <div
-                                                        key={photoIndex}
-                                                        className={`aspect-square rounded overflow-hidden bg-gray-100 cursor-pointer border ${selectedPhoto === photo ? "border-blue-500" : "border-transparent"
-                                                            }`}
-                                                        onClick={() => setSelectedPhoto(photo)} // Cambiar la foto principal
-                                                    >
-                                                        <img
-                                                            src={photo}
-                                                            alt={`Foto de ${species.commonName} ${photoIndex + 1}`}
-                                                            className="w-full h-full object-cover"
-                                                        />
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
+        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 md:px-8 py-8">
+            <div className="flex flex-col sm:flex-row items-center justify-between mb-6">
+                <div>
+                    <h3 className="text-gray-800 text-xl font-bold sm:text-2xl text-center sm:text-left">
+                        Usuarios
+                    </h3>
+                    <p className="text-gray-600 mt-2">Lista de usuarios registrados en el sistema</p>
                 </div>
+                <a
+                    href="javascript:void(0)"
+                    className="inline-block px-4 py-2 text-white font-medium bg-indigo-600 rounded-lg hover:bg-indigo-500 active:bg-indigo-700 transition-colors duration-150 mt-4 sm:mt-0 sm:text-sm"
+                >
+                    Añadir usuario
+                </a>
             </div>
+
+            <div className="overflow-x-auto shadow-sm border rounded-lg">
+                <table className="w-full table-auto text-sm text-left">
+                    <thead className="bg-gray-50 text-gray-600 font-medium border-b">
+                        <tr>
+                            <th className="py-3 px-6 sm:px-4">Usuario</th>
+                            <th className="py-3 px-6 sm:px-4 hidden md:table-cell">Email</th>
+                            <th className="py-3 px-6 sm:px-4 hidden lg:table-cell">Rol</th>
+                            <th className="py-3 px-6 sm:px-4 hidden xl:table-cell">Estado</th>
+                            <th className="py-3 px-6 sm:px-4">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody className="text-gray-600 divide-y">
+                        {users.map((user) => (
+                            <tr key={user.uid} className="hover:bg-gray-50">
+                                <td className="flex items-center gap-x-3 py-3 px-6 sm:px-4 whitespace-nowrap">
+                                    <img
+                                        src={user.photoURL || 'default-avatar.png'}
+                                        className="w-10 h-10 rounded-full"
+                                        alt={`${user.firstName} ${user.lastName}`}
+                                    />
+                                    <div>
+                                        <span className="block text-gray-700 text-sm font-medium">
+                                            {user.firstName} {user.lastName}
+                                        </span>
+                                    </div>
+                                </td>
+                                <td className="px-6 sm:px-4 py-4 whitespace-nowrap hidden md:table-cell">
+                                    {user.email}
+                                </td>
+                                <td className="px-6 sm:px-4 py-4 whitespace-nowrap hidden lg:table-cell">
+                                    <span
+                                        className={`px-3 py-1 rounded-full text-xs ${user.role === 'admin'
+                                            ? 'bg-green-100 text-green-600'
+                                            : 'bg-blue-100 text-blue-600'
+                                            }`}
+                                    >
+                                        {user.role}
+                                    </span>
+                                </td>
+                                <td className="px-6 sm:px-4 py-4 whitespace-nowrap hidden xl:table-cell">
+                                    <span
+                                        className={`px-3 py-1 rounded-full text-xs ${user.status === 'active'
+                                            ? 'bg-green-100 text-green-600'
+                                            : 'bg-red-100 text-red-600'
+                                            }`}
+                                    >
+                                        {user.status === 'active' ? 'Activo' : 'Inactivo'}
+                                    </span>
+                                </td>
+                                <td className="text-right px-6 sm:px-4 whitespace-nowrap">
+                                    <button
+                                        onClick={() => handleEditClick(user)}
+                                        className="inline-block py-2 px-3 font-medium text-indigo-600 hover:text-indigo-500 hover:bg-gray-50 rounded-lg transition-colors duration-150"
+                                    >
+                                        Editar
+                                    </button>
+                                    <button className="inline-block py-2 px-3 font-medium text-red-600 hover:text-red-500 hover:bg-gray-50 rounded-lg transition-colors duration-150">
+                                        Eliminar
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+
+            {/* Modal para editar usuario */}
+            {selectedUser && (
+                <UserEditModal
+                    user={selectedUser}
+                    isOpen={isModalOpen}
+                    onClose={handleModalClose}
+                />
+            )}
         </div>
     );
 };
 
-export default BitacoraDetailPage;
+export default PagePrueba;

@@ -1,7 +1,8 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/useAuth';
+import Alert from './Alert';
 
-const ProtectedRoute = ({ element }) => {
+const ProtectedAuthenticator = ({ element }) => {
     const { isAuthenticated, isLoading } = useAuth();
 
     if (isLoading) {
@@ -33,4 +34,24 @@ const ProtectedRoute = ({ element }) => {
     return isAuthenticated ? element : <Navigate to="/login" />;
 };
 
-export default ProtectedRoute;
+const ProtectedLogs = ({ children }) => {
+    const { user } = useAuth();
+
+    if (user?.role === 'investigador' || user?.role === 'administrador') {
+        return children;
+    } else {
+        return <Alert />;
+    }
+};
+
+const ProtectedManage = ({ children }) => {
+    const { user } = useAuth();
+
+    if (user?.role === 'administrador') {
+        return children;
+    } else {
+        return <Alert />;
+    }
+};
+
+export { ProtectedAuthenticator, ProtectedLogs, ProtectedManage};

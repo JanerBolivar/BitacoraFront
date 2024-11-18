@@ -41,9 +41,17 @@ const LoginPage = () => {
             const { user, token, expirationDate } = response.data;
             login(user, token, expirationDate); // Inicia sesión
 
+
         } catch (err) {
-            setError('Error al iniciar sesión. Por favor, verifica tus credenciales.');
-            console.error(err);
+            if (err.response) {
+                if (err.response.status === 403 && err.response.data.message === 'Usuario inactivo') {
+                    setError('Tu cuenta está inactiva. Por favor, contacta con soporte.');
+                } else {
+                    setError('Error al iniciar sesión. Por favor, verifica tus credenciales.');
+                }
+            } else {
+                setError('Error de red. Intenta nuevamente.');
+            }
         }
     };
 
@@ -66,7 +74,15 @@ const LoginPage = () => {
             login(user, token, expirationDate); // Inicia sesión
 
         } catch (err) {
-            setError(err.message);
+            if (err.response) {
+                if (err.response.status === 403 && err.response.data.message === 'Usuario inactivo') {
+                    setError('Tu cuenta está inactiva. Por favor, contacta con soporte.');
+                } else {
+                    setError(err.message);
+                }
+            } else {
+                setError('Error de red. Intenta nuevamente.');
+            }
         }
     };
 
@@ -87,7 +103,15 @@ const LoginPage = () => {
             login(user, token, expirationDate); // Inicia sesión
 
         } catch (err) {
-            setError(err.message);
+            if (err.response) {
+                if (err.response.status === 403 && err.response.data.message === 'Usuario inactivo') {
+                    setError('Tu cuenta está inactiva. Por favor, contacta con soporte.');
+                } else {
+                    setError(err.message);
+                }
+            } else {
+                setError('Error de red. Intenta nuevamente.');
+            }
         }
     };
 
@@ -108,7 +132,15 @@ const LoginPage = () => {
             login(user, token, expirationDate); // Inicia sesión
 
         } catch (err) {
-            setError(err.message);
+            if (err.response) {
+                if (err.response.status === 403 && err.response.data.message === 'Usuario inactivo') {
+                    setError('Tu cuenta está inactiva. Por favor, contacta con soporte.');
+                } else {
+                    setError(err.message);
+                }
+            } else {
+                setError('Error de red. Intenta nuevamente.');
+            }
         }
     };
 
