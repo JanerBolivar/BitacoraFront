@@ -174,10 +174,6 @@ const LogPage = () => {
         toggleSpeciesModal();
     };
 
-    const handleEditSpecies = (species, index) => {
-        console.log('Editar especie:', species, index);
-    };
-
     const handleFileChange = (e) => {
         const files = Array.from(e.target.files);
         setFormData(prev => ({
@@ -593,13 +589,6 @@ const LogPage = () => {
                                                         </div>
                                                     </td>
                                                     <td className="text-right px-6 py-4 whitespace-nowrap">
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => handleEditSpecies(species, index)}
-                                                            className="py-2 px-3 font-medium text-indigo-600 hover:text-indigo-500 duration-150 hover:bg-gray-50 rounded-lg"
-                                                        >
-                                                            Editar
-                                                        </button>
                                                         <button
                                                             type="button"
                                                             onClick={() => {

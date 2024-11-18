@@ -19,7 +19,7 @@ const DashboardPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // Search states
+  // Search and Advanced Filter States
   const [searchParams, setSearchParams] = useState({
     title: "",
     date: "",
@@ -27,6 +27,24 @@ const DashboardPage = () => {
     species: ""
   });
   const [activeFilter, setActiveFilter] = useState("title");
+
+  // Enhanced filtering state
+  const [filters, setFilters] = useState({
+    dateRange: { start: null, end: null },
+    location: { latitude: '', longitude: '' },
+    habitat: {
+      vegetationType: '',
+      waterBodies: '',
+      soilType: '',
+      altitude: ''
+    },
+    weather: {
+      cloudCover: '',
+      temperature: '',
+      humidity: '',
+      windSpeed: ''
+    }
+  });
 
   useEffect(() => {
     const fetchFieldLogs = async () => {
@@ -44,38 +62,32 @@ const DashboardPage = () => {
     fetchFieldLogs();
   }, []);
 
-  useEffect(() => {
-    filterLogs();
-  }, [searchParams, fieldLogs]);
+  // Comprehensive filtering function
+  const applyFilters = () => {
+    let result = [...fieldLogs];
 
-  const filterLogs = () => {
-    let filtered = [...fieldLogs];
-
-    // Filter by title
+    // Search Filters
     if (searchParams.title) {
-      filtered = filtered.filter(log =>
+      result = result.filter(log =>
         log.title.toLowerCase().includes(searchParams.title.toLowerCase())
       );
     }
 
-    // Filter by date
     if (searchParams.date) {
-      filtered = filtered.filter(log =>
+      result = result.filter(log =>
         log.date.includes(searchParams.date)
       );
     }
 
-    // Filter by location
     if (searchParams.location) {
-      filtered = filtered.filter(log =>
+      result = result.filter(log =>
         log.location.latitude.includes(searchParams.location) ||
         log.location.longitude.includes(searchParams.location)
       );
     }
 
-    // Filter by species
     if (searchParams.species) {
-      filtered = filtered.filter(log =>
+      result = result.filter(log =>
         log.collectedSpecies.some(species =>
           species.commonName.toLowerCase().includes(searchParams.species.toLowerCase()) ||
           species.scientificName.toLowerCase().includes(searchParams.species.toLowerCase())
@@ -83,9 +95,136 @@ const DashboardPage = () => {
       );
     }
 
-    setFilteredLogs(filtered);
+    // Advanced Filters
+    // Date Range Filter
+    if (filters.dateRange.start && filters.dateRange.end) {
+      result = result.filter(log => {
+        const logDate = new Date(log.date);
+        return (
+          logDate >= new Date(filters.dateRange.start) &&
+          logDate <= new Date(filters.dateRange.end)
+        );
+      });
+    }
+
+    // Location Filter
+    if (filters.location.latitude) {
+      result = result.filter(log =>
+        log.location.latitude.includes(filters.location.latitude)
+      );
+    }
+    if (filters.location.longitude) {
+      result = result.filter(log =>
+        log.location.longitude.includes(filters.location.longitude)
+      );
+    }
+
+    // Habitat Filters
+    Object.keys(filters.habitat).forEach(key => {
+      if (filters.habitat[key]) {
+        result = result.filter(log =>
+          log.habitat[key].toLowerCase().includes(filters.habitat[key].toLowerCase())
+        );
+      }
+    });
+
+    // Weather Filters
+    Object.keys(filters.weather).forEach(key => {
+      if (filters.weather[key]) {
+        result = result.filter(log =>
+          log.weather[key].toLowerCase().includes(filters.weather[key].toLowerCase())
+        );
+      }
+    });
+
+    setFilteredLogs(result);
   };
 
+  // Trigger filtering when search or filters change
+  useEffect(() => {
+    applyFilters();
+  }, [searchParams, filters, fieldLogs]);
+
+  // Sorting function
+  const sortLogs = (logs, criteria) => {
+    switch (criteria) {
+      case 'fecha':
+        return [...logs].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      case 'lugar':
+        return [...logs].sort((a, b) =>
+          a.location.latitude.localeCompare(b.location.latitude)
+        );
+      case 'relevancia':
+        return [...logs].sort((a, b) =>
+          (b.collectedSpecies?.length || 0) - (a.collectedSpecies?.length || 0)
+        );
+      default:
+        return logs;
+    }
+  };
+
+  // Handler for advanced filter changes
+  const handleFilterChange = (category, key, value) => {
+    setFilters(prev => ({
+      ...prev,
+      [category]: {
+        ...prev[category],
+        [key]: value
+      }
+    }));
+  };
+
+  // Handler for search changes
+  const handleSearchChange = (value) => {
+    setSearchParams(prev => ({
+      ...prev,
+      [activeFilter]: value
+    }));
+  };
+
+  // Sort logs handler
+  const handleSortChange = (criteria) => {
+    setSortBy(criteria);
+    setFilteredLogs(sortLogs(filteredLogs, criteria));
+    setIsMenuOpen(false);
+  };
+
+  // Reset all filters and search
+  const handleShowAll = () => {
+    // Reset search parameters
+    setSearchParams({
+      title: "",
+      date: "",
+      location: "",
+      species: ""
+    });
+
+    // Reset advanced filters
+    setFilters({
+      dateRange: { start: null, end: null },
+      location: { latitude: '', longitude: '' },
+      habitat: {
+        vegetationType: '',
+        waterBodies: '',
+        soilType: '',
+        altitude: ''
+      },
+      weather: {
+        cloudCover: '',
+        temperature: '',
+        humidity: '',
+        windSpeed: ''
+      }
+    });
+
+    // Reset active filter
+    setActiveFilter("title");
+
+    // Show all logs
+    setFilteredLogs(fieldLogs);
+  };
+
+  // Date formatting utility
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("es-ES", {
@@ -94,51 +233,9 @@ const DashboardPage = () => {
     });
   };
 
-  const handleSortChange = (criteria) => {
-    setSortBy(criteria);
-    let sorted = [...filteredLogs];
-
-    switch (criteria) {
-      case "fecha":
-        sorted.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        break;
-      case "lugar":
-        sorted.sort((a, b) => a.location.latitude.localeCompare(b.location.latitude));
-        break;
-      case "relevancia":
-        sorted.sort((a, b) => b.collectedSpecies.length - a.collectedSpecies.length);
-        break;
-      default:
-        break;
-    }
-
-    setFilteredLogs(sorted);
-    setIsMenuOpen(false);
-  };
-
-  const handleSearchChange = (value) => {
-    setSearchParams(prev => ({
-      ...prev,
-      [activeFilter]: value
-    }));
-  };
-
+  // Navigation to log details
   const handleViewBitacora = (log) => {
     navigate(`/log-information/${log.id}`);
-  };
-
-  const handleShowAll = () => {
-    // Reset all search parameters
-    setSearchParams({
-      title: "",
-      date: "",
-      location: "",
-      species: ""
-    });
-    // Reset the filtered logs to show all logs
-    setFilteredLogs(fieldLogs);
-    // Reset the active filter to title (default)
-    setActiveFilter("title");
   };
 
   const isInvestigator = user.role === "investigador";
@@ -167,26 +264,31 @@ const DashboardPage = () => {
               </div>
             )}
 
-            <div className="flex flex-col space-y-4 mb-6">
-              <SearchFilter
-                activeFilter={activeFilter}
-                setActiveFilter={setActiveFilter}
-                handleShowAll={handleShowAll}
-              />
-
-              <div className="flex flex-col sm:flex-row gap-4">
-                <SearchBar
+            <div className="mb-6 bg-white shadow rounded-lg p-6">
+              <div className="flex flex-col space-y-4">
+                <SearchFilter
                   activeFilter={activeFilter}
-                  searchParams={searchParams}
-                  handleSearchChange={handleSearchChange}
+                  setActiveFilter={setActiveFilter}
+                  handleShowAll={handleShowAll}
                 />
 
-                <SortDropdown
-                  sortBy={sortBy}
-                  isMenuOpen={isMenuOpen}
-                  setIsMenuOpen={setIsMenuOpen}
-                  handleSortChange={handleSortChange}
-                />
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <SearchBar
+                    activeFilter={activeFilter}
+                    searchParams={searchParams}
+                    handleSearchChange={handleSearchChange}
+                  />
+
+                  <SortDropdown
+                    sortBy={sortBy}
+                    isMenuOpen={isMenuOpen}
+                    setIsMenuOpen={setIsMenuOpen}
+                    handleSortChange={handleSortChange}
+                    filters={filters}
+                    handleFilterChange={handleFilterChange}
+                    handleShowAll={handleShowAll}
+                  />
+                </div>
               </div>
             </div>
 
